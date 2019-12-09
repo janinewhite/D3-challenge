@@ -1,3 +1,5 @@
+var dataFile = "https://raw.githubusercontent.com/janinewhite/D3-challenge/master/assets/db/data.csv"
+var csvData;
 var svgWidth = 400;
 var svgHeight = 300;
 
@@ -5,7 +7,7 @@ var margin = {
   top: 10,
   right: 40,
   bottom: 60,
-  left: 100
+  left: 75
 };
 
 var width = svgWidth - margin.left - margin.right;
@@ -20,13 +22,9 @@ var svg = d3.select(".chart")
 var chartGroup = svg.append("g")
   .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
-// Import Data
-dataFile = "https://raw.githubusercontent.com/janinewhite/D3-challenge/master/assets/db/data.csv"
-d3.csv(dataFile).then(function(stateData) {
-
-    // Step 1: Parse Data/Cast as numbers
-    // ==============================
-    stateData.forEach(function(data) {
+d3.csv(dataFile).then(data => {
+    csvData = data;
+    csvData.forEach(data => {
         data.income = +data.income;
         data.age = +data.age;
         data.poverty = +data.poverty;
@@ -34,80 +32,79 @@ d3.csv(dataFile).then(function(stateData) {
         data.obesity = +data.obesity;
         data.smokes = +data.smokes;
     });
+    
+    let xAxis = "age";
+    let yAxis = "income";
+    let xVar, yVar;
 
-    // Step 2: Create scale functions
-    // ==============================
-    var xLinearScale = d3.scaleLinear()
-      .domain([20, d3.max(stateData, d => d.age)])
-      .range([0, width]);
-
-    var yLinearScale = d3.scaleLinear()
-      .domain([0, d3.max(stateData, d => d.income)])
-      .range([height, 0]);
-
-    // Step 3: Create axis functions
-    // ==============================
-    var bottomAxis = d3.axisBottom(xLinearScale);
-    var leftAxis = d3.axisLeft(yLinearScale);
-
-    // Step 4: Append Axes to the chart
-    // ==============================
+    // Create axes
+    let xLinearScale = d3.scaleLinear()
+        .domain([20, d3.max(csvData, d => {
+            eval("xVar = d."+xAxis+";")
+            return xVar;
+        })])
+        .range([0, width]);
+    let yLinearScale = d3.scaleLinear()
+        .domain([0, d3.max(csvData, d => {
+            eval("yVar = d."+yAxis+";")
+            return yVar;
+        })])
+        .range([height, 0]);
+    let bottomAxis = d3.axisBottom(xLinearScale);
+    let leftAxis = d3.axisLeft(yLinearScale);
     chartGroup.append("g")
-      .attr("transform", `translate(0, ${height})`)
-      .call(bottomAxis);
-
+        .attr("transform", `translate(0, ${height})`)
+        .call(bottomAxis);
     chartGroup.append("g")
-      .call(leftAxis);
-
-    // Step 5: Create Circles
-    // ==============================
-    var circlesGroup = chartGroup.selectAll("circle")
-    .data(stateData)
-    .enter()
-    .append("circle")
-    .attr("cx", d => xLinearScale(d.age))
-    .attr("cy", d => yLinearScale(d.income))
-    .attr("r", "3")
-    .attr("fill", "blue")
-    .attr("opacity", ".5");
-
-    // Step 6: Initialize tool tip
-    // ==============================
-    var toolTip = d3.tip()
-      .attr("class", "tooltip")
-      .offset([80, -60])
-      .html(function(d) {
-        return (`State: ${d.abbr}<br>Age: ${d.Age}<br>Income: ${d.Income}`);
-      });
-
-    // Step 7: Create tooltip in the chart
-    // ==============================
-    chartGroup.call(toolTip);
-
-    // Step 8: Create event listeners to display and hide the tooltip
-    // ==============================
-    circlesGroup.on("click", function(data) {
-      toolTip.show(data, this);
-    })
-      // onmouseout event
-      .on("mouseout", function(data, index) {
-        toolTip.hide(data);
-      });
-
-    // Create axes labels
+        .call(leftAxis);
+    
+    // Label axes
     chartGroup.append("text")
       .attr("transform", "rotate(-90)")
-      .attr("y", 0 - margin.left + 40)
+      .attr("y", 0 - margin.left)
       .attr("x", 0 - (height / 2))
       .attr("dy", "1em")
       .attr("class", "axisText")
-      .text("Age");
-
+      .text(yAxis.toUpperCase());
     chartGroup.append("text")
       .attr("transform", `translate(${width / 2}, ${height + margin.top + 30})`)
       .attr("class", "axisText")
-      .text("Income");
-  }).catch(function(error) {
-    console.log(error);
-  });
+      .text(xAxis.toUpperCase());
 
+    // Create circles
+    let circlesGroup = chartGroup.selectAll("circle")
+        .data(csvData)
+        .enter()
+        .append("circle")
+        .attr("cx", d => {            
+            eval("xVar = d."+xAxis+";");
+            return xLinearScale(xVar);
+        })
+        .attr("cy", d => {            
+            eval("yVar = d."+yAxis+";");
+            return yLinearScale(yVar);
+        })
+        .attr("r", "3")
+        .attr("fill", "blue")
+        .attr("opacity", ".5");
+    
+        // initialize tooltips
+    let toolTip = d3.tip()
+      .attr("class", "tooltip")
+      .offset([80, -60])
+      .html(function(d) {return (`State: ${d.abbr}<br>${xAxis}: ${xVar}<br>${yAxis}:${yVar}`);
+      });
+    
+    // create tooltip
+    chartGroup.call(toolTip);
+    
+    // create event listeners for tooltip
+    circlesGroup
+        .on("click", function(data) {
+            toolTip.show(data, this);
+        })
+        .on("mouseout", function(data, index) {
+            toolTip.hide(data);
+        });
+    
+}).catch(error => console.log(error));

@@ -4,4 +4,4 @@ The challenge is to create a scatterplot using D3 and the given data.  In additi
 
 https://janinewhite.github.io/D3-challenge/
 
-![https://github.com/janinewhite/D3-challenge/blob/master/assets/img/Preview.png](Preview)
+![Preview](https://github.com/janinewhite/D3-challenge/blob/master/assets/img/Preview.png)

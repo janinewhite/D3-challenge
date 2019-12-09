@@ -3,7 +3,6 @@ function capitalizeFirstLetter(text) {
     return text[0].toUpperCase() + text.slice(1).toLowerCase();
 }
 function titleCase(text) {
-    console.log(text);
     text_split = text.toLowerCase().split(" ");
     return text_split.map(x => capitalizeFirstLetter(x)).join(" ");
 }
@@ -69,11 +68,11 @@ d3.csv(dataFile).then(data => {
                 d3.min(csvData, d => {
                     eval("xVar = d."+xAxis+";")
                     return xVar;
-                })*0.8, 
+                })*0.95, 
                 d3.max(csvData, d => {
                     eval("xVar = d."+xAxis+";")
                     return xVar;
-                })*1.1
+                })
             ])
             .range([0, width]);
         let yLinearScale = d3.scaleLinear()
@@ -81,11 +80,11 @@ d3.csv(dataFile).then(data => {
                 d3.min(csvData, d => {
                     eval("yVar = d."+yAxis+";")
                     return yVar;
-                })*0.8,
+                })*0.95,
                 d3.max(csvData, d => {
                     eval("yVar = d."+yAxis+";")
                     return yVar;
-                })*1.1
+                })
             ])
             .range([height, 0]);
         let bottomAxis = d3.axisBottom(xLinearScale);
@@ -132,10 +131,27 @@ d3.csv(dataFile).then(data => {
                 eval("yVar = d."+yAxis+";");
                 return yLinearScale(yVar);
             })
-            .attr("r", "3")
+            .attr("r", "10")
             .attr("fill", "blue")
             .attr("opacity", ".5")
             .on('mouseover',toolTip.show)
             .on('mouseout',toolTip.hide);
-    });
+        let textGroup = chartGroup.selectAll("text")
+            .data(csvData)
+            .enter()
+            .append("text")
+            .text(d => d.abbr)
+            .attr("class","text-in-circle")
+            .attr("dx", d => {            
+                        eval("xVar = d."+xAxis+";");
+                        return xLinearScale(xVar)-6;
+            })
+            .attr("dy", d => {            
+                        eval("yVar = d."+yAxis+";");
+                        return yLinearScale(yVar)+4;
+            })
+            .attr("font-size", 8)
+            .attr("font-weight", "bold")
+            .attr("opacity", ".75");
+    }); 
 }).catch(error => console.log(error));

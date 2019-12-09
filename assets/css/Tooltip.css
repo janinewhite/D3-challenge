@@ -25,3 +25,9 @@ d3-tip.n:after {
   left: 0;
 }
 
+.text-in-circle {
+  color: red;
+  font-weight: bold;
+  opacity: 0.75;
+}
+

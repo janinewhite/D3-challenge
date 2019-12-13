@@ -12,7 +12,7 @@ var dataFile = "https://raw.githubusercontent.com/janinewhite/D3-challenge/maste
 var csvData;
 var xAxis = "age";
 var yAxis = "income";
-var xVar, yVar;
+//var xVar, yVar;
 var clicks = 0;
 
 // Create selection event handlers
@@ -48,65 +48,98 @@ var svg = d3.select(".chart")
   .attr("height", svgHeight);
 
 // Get Data
-d3.csv(dataFile).then(data => {
-    csvData = data;
-    csvData.forEach(data => {
-        csvData.income = +data.income;
-        csvData.age = +data.age;
-        csvData.poverty = +data.poverty;
-        csvData.healthcare = +data.healthcare;
-        csvData.obesity = +data.obesity;
-        csvData.smokes = +data.smokes;
+var xData, yData;
+var xMin, xMax, yMin, yMax;
+d3.csv(dataFile).then(csvData => {
+    //csvData = data;
+    csvData.forEach(row => {
+        row.income = +row.income;
+        row.age = +row.age;
+        row.poverty = +row.poverty;
+        row.healthcare = +row.healthcare;
+        row.obesity = +row.obesity;
+        row.smokes = +row.smokes;
     });
     
     // Button event handler
     var graphButton = d3.select(".graph-button");
-    graphButton.on("click",function(){
+        graphButton.on("click",function(){
         console.log("Number of button clicks: "+clicks)
         clicks += 1
         console.log("Graphing "+xAxis+" vs "+yAxis)
         // Set chart title
-        d3.select(".chart-title").text("US States: "+titleCase(xAxis)+" vs "+titleCase(yAxis))
+        d3.select(".chart-title").text("US States: "+titleCase(xAxis)+" vs "+titleCase(yAxis));
+        switch(xAxis){
+            case "income":
+                xMin = d3.min(csvData, function(d) {return d.income});
+                xMax = d3.max(csvData, function(d) {return d.income});
+                break;
+            case "age":
+                xMin = d3.min(csvData, function(d) {return d.age});
+                xMax = d3.max(csvData, function(d) {return d.age});
+                break;
+            case "poverty":
+                xMin = d3.min(csvData, function(d) {return d.poverty});
+                xMax = d3.max(csvData, function(d) {return d.poverty});
+                break;
+            case "healthcare":
+                xMin = d3.min(csvData, function(d) {return d.healthcare});
+                xMax = d3.max(csvData, function(d) {return d.healthcare});
+                break;
+            case "obesity":
+                xMin = d3.min(csvData, function(d) {return d.obesity});
+                xMax = d3.max(csvData, function(d) {return d.obesity});
+                break;
+            case "smokes":
+                xMin = d3.min(csvData, function(d) {return d.smokes});
+                xMax = d3.max(csvData, function(d) {return d.smokes});
+                break;
+        }
+        switch(yAxis){
+            case "income":
+                yMin = d3.min(csvData, function(d) {return d.income});
+                yMax = d3.max(csvData, function(d) {return d.income});
+                break;
+            case "age":
+                yMin = d3.min(csvData, function(d) {return d.age});
+                yMax = d3.max(csvData, function(d) {return d.age});
+                break;
+            case "poverty":
+                yMin = d3.min(csvData, function(d) {return d.poverty});
+                yMax = d3.max(csvData, function(d) {return d.poverty});
+                break;
+            case "healthcare":
+                yMin = d3.min(csvData, function(d) {return d.healthcare});
+                yMax = d3.max(csvData, function(d) {return d.healthcare});
+                break;
+            case "obesity":
+                yMin = d3.min(csvData, function(d) {return d.obesity});
+                yMax = d3.max(csvData, function(d) {return d.obesity});
+                break;
+            case "smokes":
+                yMin = d3.min(csvData, function(d) {return d.smokes});
+                yMax = d3.max(csvData, function(d) {return d.smokes});
+                break;
+        }
+        console.log(xAxis+" X Min: "+xMin);
+        console.log(xAxis+" X Max: "+xMax);
+        console.log(yAxis+" Y Min: "+yMin);
+        console.log(yAxis+" Y Max: "+yMax);
+        
         // Clear svg
         svg.selectAll("*").remove();
         // Append svg group to hold chart
         var chartGroup = svg.append("g")
             .attr("transform", `translate(${margin.left}, ${margin.top})`);
         // Create axes
-        let xLinearScale = d3.scaleLinear()
-            .domain([
-                d3.min(csvData, d => {
-                    let xVarMin;
-                    eval("xVarMin = d."+xAxis+";");
-                    console.log("Scale "+d.abbr+" "+xAxis+" min: "+xVarMin);
-                    return xVarMin;
-                })*0.95, 
-                d3.max(csvData, d => {
-                    let xVarMax;
-                    eval("xVarMax = d."+xAxis+";");
-                    console.log("Scale "+d.abbr+" "+xAxis+" max: "+xVarMax);
-                    return xVarMax;
-                })
-            ])
+        var xLinearScale = d3.scaleLinear()
+            .domain([xMin*0.95,xMax])
             .range([0, width]);
-        let yLinearScale = d3.scaleLinear()
-            .domain([
-                d3.min(csvData, d => {
-                    let yVarMin, yState;
-                    eval("yVarMin = d."+yAxis.toLowerCase()+";");
-                    console.log("Scale "+d.abbr+" "+yAxis+" min: "+yVarMin);
-                    return yVarMin;
-                })*0.95,
-                d3.max(csvData, d => {
-                    let yVarMax, yState;
-                    eval("yVarMax = d."+yAxis.toLowerCase()+";")
-                    console.log("Scale "+d.abbr+" "+yAxis+" max: "+yVarMax);
-                    return yVarMax;
-                })
-            ])
+        var yLinearScale = d3.scaleLinear()
+            .domain([yMin*0.95,yMax])
             .range([height, 0]);
-        let bottomAxis = d3.axisBottom(xLinearScale);
-        let leftAxis = d3.axisLeft(yLinearScale);
+        var bottomAxis = d3.axisBottom(xLinearScale);
+        var leftAxis = d3.axisLeft(yLinearScale);
         chartGroup.append("g")
             .attr("transform", `translate(0, ${height})`)
             .call(bottomAxis);
@@ -127,14 +160,14 @@ d3.csv(dataFile).then(data => {
             .text(titleCase(xAxis));
     
         // initialize tooltips
-        let toolTip = d3.tip()
+        var toolTip = d3.tip()
             .attr("class", "tooltip")
             .offset([80, -60])
             .html(function(d) {
                 let state = d.state;
                 let state_abbr = d.abbr.toUpperCase();
-                let first_data = eval("d."+xAxis);
-                let second_data = eval("d."+yAxis);
+                let first_data = eval("+d."+xAxis);
+                let second_data = eval("+d."+yAxis);
                 let first_axis = titleCase(xAxis);                
                 let second_axis = titleCase(yAxis);
                 console.log("Tip - "+d.abbr+" "+xAxis+": "+first_data+", "+yAxis+": "+second_data);
@@ -144,20 +177,20 @@ d3.csv(dataFile).then(data => {
         svg.call(toolTip);
 
         // Create circles
-        let circlesGroup = chartGroup.selectAll("circle")
+        var circlesGroup = chartGroup.selectAll("circle")
             .data(csvData)
             .enter()
             .append("circle")
             .attr("cx", d => {
                 let circleX;
-                eval("circleX = d."+xAxis+";");
+                eval("circleX = +d."+xAxis+";");
                 let circleXtrans = xLinearScale(circleX);
                 console.log("Circle X - "+d.abbr+" "+xAxis+": "+circleX+", scaled "+circleXtrans);
                 return circleXtrans;
             })
             .attr("cy", d => {
                 let circleY;
-                eval("circleY = d."+yAxis+";");
+                eval("circleY = +d."+yAxis+";");
                 let circleYtrans = yLinearScale(circleY);
                 console.log("Circle Y - "+d.abbr+" "+xAxis+": "+circleY+", scaled "+circleYtrans);
                 return circleYtrans;
@@ -167,26 +200,26 @@ d3.csv(dataFile).then(data => {
             .attr("opacity", ".5")
             .on('mouseover',toolTip.show)
             .on('mouseout',toolTip.hide);
-        let textGroup = chartGroup.selectAll("text")
+        var textGroup = chartGroup.selectAll(".text-in-circle")
             .data(csvData)
             .enter()
-            .append("text")
+            .append("text")            
             .text(d => d.abbr)
-            .attr("class","text-in-circle")
             .attr("dx", d => {
                 let xVarText;
-                eval("xVarText = d."+xAxis+";");
+                eval("xVarText = +d."+xAxis+";");
                 let textX = xLinearScale(xVarText)-6;
                 console.log("Text X - "+d.abbr+" "+xAxis+": "+xVarText+", scaled "+textX);
                 return textX;
             })
             .attr("dy", d => {
                 let yVarText;
-                eval("yVarText = d."+yAxis+";");
+                eval("yVarText = +d."+yAxis+";");
                 let textY = yLinearScale(yVarText)+4;
                 console.log("Text Y - "+d.abbr+" "+yAxis+": "+yVarText+", scaled "+textY);
                 return textY;
             })
+            .attr("class","text-in-circle")
             .style("font-size", 8)
             .style("font-weight", "bold")
             .style("fill","white")
